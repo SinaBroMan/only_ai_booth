@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PlayDay AI 체험 부스</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        :root {
+            --bg-0: #060816;
+            --bg-1: #0b1020;
+            --bg-2: #101a35;
+            --panel: rgba(10, 16, 34, 0.56);
+            --panel-strong: rgba(7, 12, 28, 0.82);
+            --line: rgba(255, 255, 255, 0.12);
+            --line-strong: rgba(140, 203, 255, 0.28);
+            --white: #f8fbff;
+            --muted: #b9c3d7;
+            --primary: #7de7ff;
+            --secondary: #6a8cff;
+            --accent: #ff5d93;
+            --success: #78ffd6;
+            --warning: #ffd86b;
+            --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+            --glow: 0 0 0 1px rgba(255,255,255,0.04), 0 18px 60px rgba(0,0,0,0.45), 0 0 60px rgba(109, 205, 255, 0.12);
+            --radius-xl: 32px;
+            --radius-lg: 24px;
+            --radius-md: 18px;
+            --safe-top: max(22px, env(safe-area-inset-top));
+            --safe-bottom: max(22px, env(safe-area-inset-bottom));
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(73, 113, 255, 0.25), transparent 28%),
+                radial-gradient(circle at 80% 14%, rgba(0, 242, 254, 0.16), transparent 24%),
+                radial-gradient(circle at 70% 78%, rgba(255, 93, 147, 0.18), transparent 24%),
+                linear-gradient(145deg, #040611 0%, #091122 34%, #0a1631 56%, #070d1a 100%);
+            background-attachment: fixed;
+            color: var(--white);
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::before {
+            background: linear-gradient(to bottom, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+            opacity: 0.15;
+        }
+
+        body::after {
+            background: radial-gradient(circle at center, transparent 50%, rgba(0,0,0,0.35) 100%);
+        }
+
+        .ambient-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(16px);
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+            mix-blend-mode: screen;
+            animation: floatOrb 12s ease-in-out infinite;
+        }
+
+        .ambient-orb.orb-a {
+            width: 320px;
+            height: 320px;
+            left: -60px;
+            top: 12%;
+            background: rgba(0, 242, 254, 0.18);
+        }
+
+        .ambient-orb.orb-b {
+            width: 280px;
+            height: 280px;
+            right: -40px;
+            top: 18%;
+            background: rgba(122, 92, 255, 0.16);
+            animation-delay: -2s;
+        }
+
+        .ambient-orb.orb-c {
+            width: 260px;
+            height: 260px;
+            right: 18%;
+            bottom: -40px;
+            background: rgba(255, 93, 147, 0.14);
+            animation-delay: -4s;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(0, -24px, 0) scale(1.06); }
+        }
+
+        .screen {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: calc(var(--safe-top) + 8px) 16px calc(var(--safe-bottom) + 8px);
+        }
+
+        .screen-shell {
+            position: relative;
+            width: min(1180px, 100%);
+            padding: clamp(18px, 2vw, 28px);
+            border-radius: var(--radius-xl);
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.01)),
+                var(--panel);
+            border: 1px solid var(--line);
+            box-shadow: var(--glow);
+            backdrop-filter: blur(12px) saturate(110%);
+            -webkit-backdrop-filter: blur(12px) saturate(110%);
+        }
+
+        .screen-shell::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(125, 231, 255, 0.35), rgba(255,255,255,0.02), rgba(255, 93, 147, 0.2));
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .screen-shell > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 11px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        .btn {
+            appearance: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .btn::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(255,255,255,0.24), transparent 30%, transparent 70%, rgba(255,255,255,0.14));
+            opacity: 0.65;
+            pointer-events: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            color: #07121f;
+            background: linear-gradient(135deg, #9cf5ff 0%, #73c8ff 48%, #9e8bff 100%);
+            box-shadow: 0 18px 38px rgba(109, 205, 255, 0.28);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 24px 54px rgba(109, 205, 255, 0.38);
+        }
+
+        .btn-outline {
+            background: rgba(255,255,255,0.04);
+            color: var(--white);
+            border: 1px solid rgba(255,255,255,0.13);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .btn-outline:hover {
+            border-color: rgba(125, 231, 255, 0.35);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 16px 38px rgba(0,0,0,0.24);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .booth-shell {
+            width: min(1400px, 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .booth-head {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .booth-head .kicker {
+            margin-top: -4px;
+            margin-bottom: 12px;
+        }
+
+        .booth-title {
+            font-size: clamp(1.5rem, 3.2vw, 2.2rem);
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            margin-bottom: 14px;
+        }
+
+        .booth-desc {
+            max-width: 700px;
+            color: var(--muted);
+            line-height: 1.5;
+            font-size: 0.9rem;
+            word-break: keep-all;
+            margin-bottom: 16px;
+        }
+
+        .booth-line {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .booth-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .booth-notice {
+            max-width: 900px;
+            text-align: center;
+            margin: 0 auto;
+            padding: 10px 16px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, rgba(125, 231, 255, 0.08), rgba(255,255,255,0.04));
+            border: 1px solid rgba(125, 231, 255, 0.16);
+            color: rgba(248, 251, 255, 0.9);
+            line-height: 1.5;
+            font-size: 0.85rem;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 16px 36px rgba(0,0,0,0.18);
+        }
+
+        .booth-notice strong {
+            color: var(--primary);
+        }
+
+        .email-copy {
+            color: var(--warning);
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: opacity 0.2s ease;
+        }
+        .email-copy:hover {
+            opacity: 0.85;
+        }
+
+        .canvas-feature-link {
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            font-weight: 700;
+            transition: opacity 0.2s ease, color 0.2s ease;
+            padding: 2px 4px;
+            border-radius: 4px;
+            background: rgba(125, 231, 255, 0.12);
+        }
+        .canvas-feature-link:hover {
+            opacity: 0.95;
+            color: #9cf5ff;
+            background: rgba(125, 231, 255, 0.2);
+        }
+
+        .canvas-guide-popover {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 10px;
+            z-index: 100;
+            background: rgba(8, 13, 26, 0.98);
+            border: 1px solid rgba(125, 231, 255, 0.3);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+            max-width: min(520px, 90vw);
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+            transform: translateY(4px);
+        }
+        .card-sub:has(.canvas-feature-link:hover) .canvas-guide-popover,
+        .canvas-guide-popover:hover {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .canvas-guide-popover img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .canvas-guide-popover .guide-caption {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .canvas-guide-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0,0,0,0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .canvas-guide-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .canvas-guide-modal .modal-inner {
+            max-width: 90vw;
+            max-height: 90vh;
+            background: rgba(15, 23, 42, 0.98);
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid rgba(125, 231, 255, 0.25);
+            box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+        }
+        .canvas-guide-modal img {
+            display: block;
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 12px;
+        }
+
+        .guide-video-inner {
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        .guide-video-inner iframe,
+        .guide-video-inner video {
+            display: block;
+            width: min(853px, 90vw);
+            height: min(480px, 50.6vw);
+            border-radius: 12px;
+            border: none;
+        }
+
+        .booth-container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .booth-card {
+            min-width: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 16px;
+            border-radius: 20px;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025)),
+                rgba(10, 16, 34, 0.58);
+            border: 1px solid rgba(255,255,255,0.09);
+            box-shadow: 0 22px 54px rgba(0,0,0,0.28);
+            transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+        }
+
+        .booth-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(125, 231, 255, 0.28);
+            box-shadow: 0 30px 68px rgba(0,0,0,0.35), 0 0 40px rgba(125, 231, 255, 0.08);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            line-height: 1.16;
+            letter-spacing: -0.03em;
+        }
+
+        .card-sub {
+            color: var(--muted);
+            line-height: 1.5;
+            font-size: 0.85rem;
+            word-break: keep-all;
+        }
+
+        .tool-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            white-space: nowrap;
+            background: rgba(125, 231, 255, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(125, 231, 255, 0.18);
+        }
+
+        .prompt-wrap {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .prompt-label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            color: rgba(255,255,255,0.62);
+        }
+
+        .prompt-box {
+            flex: 0 0 auto;
+            height: 140px;
+            min-height: 140px;
+            max-height: 140px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(3, 8, 20, 0.58);
+            border: 1px solid rgba(255,255,255,0.07);
+            color: #c6d4ff;
+            font-family: 'Consolas', 'SFMono-Regular', Menlo, monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            word-break: keep-all;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .prompt-box::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .prompt-box::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.04);
+            border-radius: 999px;
+        }
+
+        .prompt-box::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 999px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        .prompt-box::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.22);
+        }
+
+        .booth-card--gemini {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .booth-card--gemini .card-scroll-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            overflow: visible;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .booth-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(var(--safe-bottom) + 18px);
+            transform: translateX(-50%);
+            z-index: 60;
+            padding: 13px 18px;
+            min-width: 240px;
+            text-align: center;
+            border-radius: 999px;
+            color: #07121f;
+            font-weight: 800;
+            background: linear-gradient(135deg, #9cf5ff, #7fe8d6);
+            box-shadow: 0 18px 40px rgba(109, 205, 255, 0.28);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.28s ease, transform 0.28s ease, visibility 0.28s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-4px);
+        }
+
+        @media (max-width: 1024px) {
+            .booth-container {
+                grid-template-columns: 1fr;
+            }
+
+            .screen-shell {
+                padding: 24px;
+            }
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            .screen {
+                padding-inline: 14px;
+                padding-top: max(20px, var(--safe-top));
+                padding-bottom: max(20px, var(--safe-bottom));
+                align-items: flex-start;
+            }
+
+            .screen-shell {
+                padding: 20px 18px;
+                border-radius: 24px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .booth-card {
+                padding: 18px;
+            }
+
+            .btn,
+            .btn-group {
+                width: 100%;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+
+            .booth-head {
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-orb orb-a"></div>
+    <div class="ambient-orb orb-b"></div>
+    <div class="ambient-orb orb-c"></div>
+
+    <div id="booth-screen" class="screen">
+        <div class="screen-shell booth-shell">
+            <div class="booth-head">
+                <div>
+                    <div class="kicker">PLAYDAY AI BOOTH</div>
+                    <h2 class="booth-title">🌟 PlayDay AI 체험 부스</h2>
+                    <p class="booth-desc">
+                        <span class="booth-line">당신의 완벽한 칼퇴와 업무 능력 향상을 위해 AI를 직접 체험해보세요.</span>
+                        <span class="booth-line">같은 업무라도 도구를 바꾸면 속도와 퀄리티가 완전히 달라집니다.</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="booth-container">
+                <div class="booth-card booth-card--gemini">
+                    <div class="card-scroll-area">
+                        <div class="card-top">
+                            <div>
+                                <h3 class="card-title">✨ Gemini (Canvas)</h3>
+                            </div>
+                            <span class="tool-tag">Dash Board</span>
+                        </div>
+                        <div class="card-sub" style="position: relative;">
+                            <p>
+                                복잡한 기획안과 현황판을 순식간에. <span class="canvas-feature-link" onclick="showCanvasGuide()" title="클릭하거나 마우스를 올려보세요">Canvas 기능</span>을 활용해 인터랙션 대시보드를 만들어보세요.
+                                미리보기 기반으로 바로 구조를 확인할 수 있습니다.
+                            </p>
+                            <div class="canvas-guide-popover">
+                                <img src="https://raw.githubusercontent.com/SinaBroMan/canvas/refs/heads/main/notice%20image.png" alt="Gemini Canvas 사용 방법">
+                                <div class="guide-caption">1. "도구" 클릭 → 2. "Canvas" 선택</div>
+                            </div>
+                        </div>
+                        <div class="prompt-wrap">
+                            <div style="text-align: right; color: var(--muted); font-size: 0.7rem; margin-bottom: 4px;">( ※ 구글 로그인 필요)</div>
+                            <div class="prompt-box" id="prompt1">
+                                <div class="prompt-label" style="margin-bottom: 8px;">TRY THIS PROMPT</div>
+                                단일 HTML로 브라우저에서 바로 작동하는 모던한 '건설 현장 관리 대시보드'를 만들어주세요.<br><br>
+                                화면에는 KPI 카드 4개(공정률, 무재해, 인원, 예산), 차트 2개(주간 공정, 직종별 인원), 안전 체크리스트, 실시간 이슈 테이블이 모두 들어가야 합니다.<br><br>
+                                반응형 디자인을 적용하고, 가상의 더미 데이터와 인터랙션(체크박스, 차트 렌더링)을 포함해 완벽한 코드로 작성해 주세요.<br>
+                                (※ 모든 UI는 기기 화면 비율에 최적화하여 코딩)</div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline btn-block" onclick="copyPrompt('prompt1')">프롬프트 복사</button>
+                            <a href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block">Gemini 바로가기</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="booth-card">
+                    <div class="card-top">
+                        <div>
+                            <h3 class="card-title">🎸 수노 AI (Suno)</h3>
+                        </div>
+                        <span class="tool-tag">Music Creation</span>
+                    </div>
+                    <p class="card-sub">
+                        업무 효율을 200% 끌어올릴 나만의 노동요가 필요하신가요?
+                        신나는 음악과 함께 남은 업무도 더 즐겁게 클리어해보세요.
+                    </p>
+                    <div class="prompt-wrap">
+                        <div style="text-align: right; color: var(--muted); font-size: 0.7rem; margin-bottom: 4px;">( ※ 로그인 필요)</div>
+                        <div class="prompt-box" id="prompt2">
+                            <div class="prompt-label" style="margin-bottom: 8px;">TRY THIS PROMPT</div>
+                            산더미 같은 서류 작업도 리듬 타며 신나게 해치울 수 있는 경쾌한 K-Pop 댄스곡을 만들어줘! 가사에는 '폭풍 집중력', '완벽한 결과물', '우린 해낼 수 있어', '오늘도 멋지게 클리어' 같은 긍정적이고 에너지 넘치는 단어들을 넣어줘.
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline btn-block" onclick="copyPrompt('prompt2')">프롬프트 복사</button>
+                        <a href="https://suno.com/" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block">Suno 바로가기</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="booth-notice">
+                재밌으신가요? AI로 즐겁게 작업해보시고, 더 좋은 결과물을 <strong>AI디자인랩 (<span class="email-copy" onclick="copyEmail()" title="클릭하여 복사">ai_design_lab@hdec.co.kr</span>)</strong>으로 보내주신 분들 중<br>
+                우수작을 선정하여 스타벅스 상품권을 보내 드립니다~! (제출기한: 26년 3월 31일)
+            </div>
+
+            <div class="booth-footer">
+                <button class="btn btn-outline" onclick="showGuideVideo()">가이드라인 영상 보기 🎬</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">프롬프트가 복사되었습니다! (Ctrl+V)</div>
+
+    <div id="canvas-guide-modal" class="canvas-guide-modal" onclick="closeCanvasGuide(event)">
+        <div class="modal-inner" onclick="event.stopPropagation()">
+            <img src="https://raw.githubusercontent.com/SinaBroMan/canvas/refs/heads/main/notice%20image.png" alt="Gemini Canvas 사용 방법">
+            <div class="guide-caption" style="margin-top:12px; color:var(--muted); font-size:0.9rem;">1. "도구" 클릭 → 2. "Canvas" 선택</div>
+        </div>
+    </div>
+
+    <div id="guide-video-modal" class="canvas-guide-modal" onclick="closeGuideVideo(event)">
+        <div class="modal-inner guide-video-inner" onclick="event.stopPropagation()">
+            <div id="guide-video-content"></div>
+            <button class="btn btn-outline" style="margin-top:16px; width:100%;" onclick="closeGuideVideo()">닫기</button>
+        </div>
+    </div>
+
+    <script>
+        const GUIDE_VIDEO_CONFIG = {
+            linkUrl: 'https://youtu.be/Ok0lrEFiEyI',
+            embedUrl: '',
+            videoSrc: ''
+        };
+
+        function showCanvasGuide() {
+            document.getElementById('canvas-guide-modal').classList.add('show');
+        }
+        function closeCanvasGuide(e) {
+            if (e.target.id === 'canvas-guide-modal') {
+                document.getElementById('canvas-guide-modal').classList.remove('show');
+            }
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('canvas-guide-modal').classList.remove('show');
+                document.getElementById('guide-video-modal').classList.remove('show');
+            }
+        });
+
+        function showGuideVideo() {
+            const { linkUrl, embedUrl, videoSrc } = GUIDE_VIDEO_CONFIG;
+            const content = document.getElementById('guide-video-content');
+            content.innerHTML = '';
+
+            if (embedUrl) {
+                content.innerHTML = '<iframe src="' + embedUrl + '" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>';
+                document.getElementById('guide-video-modal').classList.add('show');
+            } else if (videoSrc) {
+                content.innerHTML = '<video src="' + videoSrc + '" controls autoplay></video>';
+                document.getElementById('guide-video-modal').classList.add('show');
+            } else if (linkUrl) {
+                window.open(linkUrl, '_blank', 'noopener,noreferrer');
+            } else {
+                showToast('가이드 영상 링크를 곧 추가할 예정입니다.');
+            }
+        }
+        function closeGuideVideo(e) {
+            if (!e || e.target.id === 'guide-video-modal') {
+                const modal = document.getElementById('guide-video-modal');
+                modal.classList.remove('show');
+                const content = document.getElementById('guide-video-content');
+                const video = content.querySelector('video');
+                if (video) video.pause();
+                content.innerHTML = '';
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        async function copyEmail() {
+            const email = 'ai_design_lab@hdec.co.kr';
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(email);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = email;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                }
+                showToast('이메일이 복사되었습니다! (Ctrl+V)');
+            } catch (err) {
+                console.error('이메일 복사에 실패했습니다.', err);
+                alert('복사에 실패했습니다. 수동으로 복사해주세요.');
+            }
+        }
+
+        async function copyPrompt(id) {
+            const text = document.getElementById(id).innerText;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                }
+                showToast('프롬프트가 복사되었습니다! (Ctrl+V)');
+            } catch (err) {
+                console.error('프롬프트 복사에 실패했습니다.', err);
+                alert('복사에 실패했습니다. 수동으로 복사해주세요.');
+            }
+        }
+    </script>
+</body>
+</html>
